@@ -12,23 +12,19 @@ export class User extends Document {
   role!: 'user' | 'admin';
 
   @Field()
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   firstName!: string;
 
   @Field()
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   lastName!: string;
 
   @Field()
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, trim: true, lowercase: true })
   email!: string;
 
-  @Field()
   @Prop({ required: true })
   password!: string;
-
-  @Prop()
-  token?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

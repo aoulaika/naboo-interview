@@ -33,7 +33,7 @@ type Mutation {
 
 type Query {
   getActivities: [Activity!]!
-  getActivitiesByCity(activity: String, city: String!, price: Int): [Activity!]!
+  getActivitiesByCity(city: String!, maxPrice: Int, name: String): [Activity!]!
   getActivitiesByUser: [Activity!]!
   getActivity(id: String!): Activity!
   getCities: [String!]!
@@ -62,5 +62,4 @@ type User {
   firstName: String!
   id: ID!
   lastName: String!
-  password: String!
 }

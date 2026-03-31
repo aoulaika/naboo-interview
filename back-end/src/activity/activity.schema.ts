@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { User } from '../user/user.schema';
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 @Schema({ timestamps: true })
@@ -21,7 +21,7 @@ export class Activity extends Document {
   @Prop({ required: true })
   description!: string;
 
-  @Field()
+  @Field(() => Int)
   @Prop({ required: true })
   price!: number;
 
@@ -38,3 +38,7 @@ export class Activity extends Document {
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity);
+
+ActivitySchema.index({ city: 1 });
+ActivitySchema.index({ owner: 1 });
+ActivitySchema.index({ createdAt: -1 });

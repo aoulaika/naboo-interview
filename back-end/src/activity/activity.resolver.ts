@@ -12,7 +12,6 @@ import {
 import { UseGuards } from '@nestjs/common';
 import { ActivityService } from './activity.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { UserService } from 'src/user/user.service';
 import { Activity } from './activity.schema';
 
 import { CreateActivityInput } from './activity.inputs.dto';
@@ -21,10 +20,7 @@ import { ContextWithJWTPayload } from 'src/auth/types/context';
 
 @Resolver(() => Activity)
 export class ActivityResolver {
-  constructor(
-    private readonly activityService: ActivityService,
-    private readonly userServices: UserService,
-  ) {}
+  constructor(private readonly activityService: ActivityService) {}
 
   @ResolveField(() => ID)
   id(@Parent() activity: Activity): string {
@@ -32,8 +28,7 @@ export class ActivityResolver {
   }
 
   @ResolveField(() => User)
-  async owner(@Parent() activity: Activity): Promise<User> {
-    await activity.populate('owner');
+  owner(@Parent() activity: Activity): User {
     return activity.owner;
   }
 
@@ -57,17 +52,17 @@ export class ActivityResolver {
 
   @Query(() => [String])
   async getCities(): Promise<string[]> {
-    const cities = await this.activityService.findCities();
-    return cities;
+    return this.activityService.findCities();
   }
 
   @Query(() => [Activity])
   async getActivitiesByCity(
     @Args('city') city: string,
-    @Args({ name: 'activity', nullable: true }) activity?: string,
-    @Args({ name: 'price', nullable: true, type: () => Int }) price?: number,
+    @Args({ name: 'name', nullable: true }) name?: string,
+    @Args({ name: 'maxPrice', nullable: true, type: () => Int })
+    maxPrice?: number,
   ): Promise<Activity[]> {
-    return this.activityService.findByCity(city, activity, price);
+    return this.activityService.findByCity(city, name, maxPrice);
   }
 
   @Query(() => Activity)
