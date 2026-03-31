@@ -86,9 +86,10 @@ describe("la fonction getFilteredRoutes", () => {
       ],
     },
   ];
+
   it("doit retourner les bonnes routes si un user est connecté", () => {
-    const filtereRoutes = getFilteredRoutes(routes, user);
-    expect(filtereRoutes).toEqual([
+    const filteredRoutes = getFilteredRoutes(routes, user);
+    expect(filteredRoutes).toEqual([
       { label: "Route1", route: "/route1" },
       { label: "Route2", route: "/route2", requiredAuth: true },
       {
@@ -104,9 +105,9 @@ describe("la fonction getFilteredRoutes", () => {
     ]);
   });
 
-  it("doit retourner les bonnes routes si un n'est pas est connecté", () => {
-    const filtereRoutes = getFilteredRoutes(routes, null);
-    expect(filtereRoutes).toEqual([
+  it("doit retourner les bonnes routes si un user n'est pas connecté", () => {
+    const filteredRoutes = getFilteredRoutes(routes, null);
+    expect(filteredRoutes).toEqual([
       { label: "Route1", route: "/route1" },
       { label: "Route3", route: "/route3", requiredAuth: false },
       {
@@ -120,5 +121,44 @@ describe("la fonction getFilteredRoutes", () => {
         ],
       },
     ]);
+  });
+
+  it("retourne un tableau vide si routes est vide", () => {
+    expect(getFilteredRoutes([], user)).toEqual([]);
+    expect(getFilteredRoutes([], null)).toEqual([]);
+  });
+
+  it("exclut une route parente avec requiredAuth = true si aucun user", () => {
+    const protectedOnly: Route[] = [
+      { label: "Secret", route: "/secret", requiredAuth: true },
+    ];
+    expect(getFilteredRoutes(protectedOnly, null)).toHaveLength(0);
+  });
+
+  it("exclut une route parente avec requiredAuth = false si user connecté", () => {
+    const guestOnly: Route[] = [
+      { label: "Login", route: "/login", requiredAuth: false },
+    ];
+    expect(getFilteredRoutes(guestOnly, user)).toHaveLength(0);
+  });
+
+  it("filtre les sous-routes et garde la route parente avec tableau vide si toutes les sous-routes sont exclues", () => {
+    const onlyProtectedSub: Route[] = [
+      {
+        label: "Menu",
+        route: [{ label: "Admin", link: "/admin", requiredAuth: true }],
+      },
+    ];
+    // no user: the parent has requiredAuth=undefined (accessible), but sub-route is filtered out
+    const result = getFilteredRoutes(onlyProtectedSub, null);
+    expect(result).toEqual([{ label: "Menu", route: [] }]);
+  });
+
+  it("ne modifie pas les routes sans sous-routes (string route)", () => {
+    const simple: Route[] = [
+      { label: "Home", route: "/home" },
+    ];
+    expect(getFilteredRoutes(simple, user)).toEqual(simple);
+    expect(getFilteredRoutes(simple, null)).toEqual(simple);
   });
 });

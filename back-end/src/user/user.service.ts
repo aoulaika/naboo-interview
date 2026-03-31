@@ -12,16 +12,8 @@ export class UserService {
     private userModel: Model<User>,
   ) {}
 
-  async getByEmail(email: string): Promise<User> {
-    const user = await this.userModel.findOne({ email: email }).exec();
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
-  }
-
   async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email: email }).exec();
+    return this.userModel.findOne({ email: email.toLowerCase() }).exec();
   }
 
   async getById(id: string): Promise<User> {
@@ -39,15 +31,6 @@ export class UserService {
   ): Promise<User> {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = new this.userModel({ ...data, password: hashedPassword });
-    return user.save();
-  }
-
-  async updateToken(id: string, token: string): Promise<User> {
-    const user = await this.userModel.findById(id).exec();
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    user.token = token;
     return user.save();
   }
 

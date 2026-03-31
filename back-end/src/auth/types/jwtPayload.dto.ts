@@ -1,4 +1,4 @@
-export type PayloadDto = {
+export type JwtPayload = {
   id: string;
   email: string;
   firstName: string;

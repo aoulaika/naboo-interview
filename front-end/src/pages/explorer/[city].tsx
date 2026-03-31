@@ -1,5 +1,5 @@
 import { ActivityListItem, EmptyData, Filters, PageTitle } from "@/components";
-import { graphqlClient } from "@/graphql/apollo";
+import { getGraphqlClient } from "@/graphql/apollo";
 import {
   GetActivitiesByCityQuery,
   GetActivitiesByCityQueryVariables,
@@ -9,7 +9,6 @@ import { useDebounced } from "@/hooks";
 import { Divider, Flex, Grid } from "@mantine/core";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { Fragment, useEffect, useState } from "react";
 
@@ -30,15 +29,15 @@ export const getServerSideProps: GetServerSideProps<CityDetailsProps> = async ({
   )
     return { notFound: true };
 
-  const response = await graphqlClient.query<
+  const response = await getGraphqlClient().query<
     GetActivitiesByCityQuery,
     GetActivitiesByCityQueryVariables
   >({
     query: GetActivitiesByCity,
     variables: {
       city: params.city,
-      activity: query.activity || null,
-      price: query.price ? Number(query.price) : null,
+      name: query.activity || null,
+      maxPrice: query.price ? Number(query.price) : null,
     },
   });
   return {
@@ -51,15 +50,15 @@ export default function ActivityDetails({
   city,
 }: CityDetailsProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { query } = router;
 
   const [searchActivity, setSearchActivity] = useState<string | undefined>(
-    searchParams?.get("activity") || undefined
+    typeof query.activity === "string" ? query.activity : undefined
   );
   const debouncedSearchActivity = useDebounced(searchActivity, 300);
 
   const [searchPrice, setSearchPrice] = useState<number | undefined>(
-    searchParams?.get("price") ? Number(searchParams.get("price")) : undefined
+    typeof query.price === "string" ? Number(query.price) : undefined
   );
   const debouncedSearchPrice = useDebounced(searchPrice, 300);
 

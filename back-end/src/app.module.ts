@@ -1,4 +1,4 @@
-import { Module, UnauthorizedException } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ActivityModule } from './activity/activity.module';
@@ -7,13 +7,12 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { MeModule } from './me/me.module';
 import { SeedModule } from './seed/seed.module';
-import { SeedService } from './seed/seed.service';
 import { UserModule } from './user/user.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { Request, Response } from 'express';
-import { PayloadDto } from './auth/types/jwtPayload.dto';
+import type { Request, Response } from 'express';
+import { JwtPayload } from './auth/types/jwtPayload.dto';
 
 @Module({
   imports: [
@@ -25,36 +24,33 @@ import { PayloadDto } from './auth/types/jwtPayload.dto';
       useFactory: async (
         jwtService: JwtService,
         configService: ConfigService,
-      ) => {
-        const secret = configService.get<string>('JWT_SECRET');
-        return {
-          autoSchemaFile: 'schema.gql',
-          sortSchema: true,
-          playground: true,
-          buildSchemaOptions: { numberScalarMode: 'integer' },
-          context: async ({ req, res }: { req: Request; res: Response }) => {
-            const token =
-              req.headers.jwt ?? (req.cookies && req.cookies['jwt']);
+      ) => ({
+        autoSchemaFile: 'schema.gql',
+        sortSchema: true,
+        playground: configService.get<string>('NODE_ENV') !== 'production',
+        buildSchemaOptions: { numberScalarMode: 'integer' },
+        context: async ({ req, res }: { req: Request; res: Response }) => {
+          const token = req.cookies?.['jwt'] as string | undefined;
 
-            let jwtPayload: PayloadDto | null = null;
-            if (token) {
-              try {
-                jwtPayload = (await jwtService.verifyAsync(token, {
-                  secret,
-                })) as PayloadDto;
-              } catch (error) {
-                throw new UnauthorizedException(error);
-              }
+          let jwtPayload: JwtPayload | null = null;
+          if (token) {
+            try {
+              jwtPayload = (await jwtService.verifyAsync(token, {
+                secret: configService.get<string>('JWT_SECRET'),
+              })) as JwtPayload;
+            } catch {
+              // Invalid or expired token — leave jwtPayload null.
+              // AuthGuard will reject protected routes; public routes proceed normally.
             }
+          }
 
-            return {
-              jwtPayload,
-              req,
-              res,
-            };
-          },
-        };
-      },
+          return {
+            jwtPayload,
+            req,
+            res,
+          };
+        },
+      }),
     }),
     AuthModule,
     UserModule,
@@ -63,7 +59,7 @@ import { PayloadDto } from './auth/types/jwtPayload.dto';
     SeedModule,
   ],
   controllers: [AppController],
-  providers: [AppService, SeedService],
+  providers: [AppService],
 })
 export class BaseAppModule {}
 
@@ -71,9 +67,10 @@ export class BaseAppModule {}
   imports: [
     BaseAppModule,
     MongooseModule.forRootAsync({
-      useFactory: () => {
-        return { uri: process.env.MONGO_URI };
-      },
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URI'),
+      }),
     }),
   ],
 })

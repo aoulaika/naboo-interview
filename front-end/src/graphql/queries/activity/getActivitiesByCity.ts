@@ -2,8 +2,8 @@ import ActivityFragment from "@/graphql/fragments/activity";
 import gql from "graphql-tag";
 
 const GetActivitiesByCity = gql`
-  query GetActivitiesByCity($activity: String, $city: String!, $price: Int) {
-    getActivitiesByCity(activity: $activity, city: $city, price: $price) {
+  query GetActivitiesByCity($name: String, $city: String!, $maxPrice: Int) {
+    getActivitiesByCity(name: $name, city: $city, maxPrice: $maxPrice) {
       ...Activity
     }
   }

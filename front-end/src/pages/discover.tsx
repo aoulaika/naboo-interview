@@ -1,5 +1,5 @@
 import { Activity, EmptyData, PageTitle } from "@/components";
-import { graphqlClient } from "@/graphql/apollo";
+import { getGraphqlClient } from "@/graphql/apollo";
 import {
   GetActivitiesQuery,
   GetActivitiesQueryVariables,
@@ -18,7 +18,7 @@ interface DiscoverProps {
 export const getServerSideProps: GetServerSideProps<
   DiscoverProps
 > = async () => {
-  const response = await graphqlClient.query<
+  const response = await getGraphqlClient().query<
     GetActivitiesQuery,
     GetActivitiesQueryVariables
   >({

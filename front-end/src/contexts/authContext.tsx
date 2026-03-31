@@ -17,7 +17,7 @@ import GetUser from "@/graphql/queries/auth/getUser";
 import { useSnackbar } from "@/hooks";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { useRouter } from "next/router";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 
 interface AuthContextType {
   user: GetUserQuery["getMe"] | null;
@@ -53,16 +53,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    if (!user && token) {
+    if (token) {
       getUser()
         .then((res) => setUser(res.data?.getMe || null))
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
-  const handleSignin = async (input: SignInInput) => {
+  const handleSignin = useCallback(async (input: SignInInput) => {
     try {
       setIsLoading(true);
       const response = await signin({ variables: { signInInput: input } });
@@ -75,9 +75,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [signin, getUser, snackbar, router]);
 
-  const handleSignup = async (input: SignUpInput) => {
+  const handleSignup = useCallback(async (input: SignUpInput) => {
     try {
       setIsLoading(true);
       await signup({ variables: { signUpInput: input } });
@@ -87,9 +87,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [signup, snackbar, router]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       setIsLoading(true);
       await logout();
@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [logout, snackbar, router]);
 
   return (
     <AuthContext.Provider

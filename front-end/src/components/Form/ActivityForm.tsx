@@ -61,7 +61,7 @@ export default function ActivityForm() {
           snackbar.error(err?.message || "Une erreur est survenue");
         });
     }
-  }, [debouncedSearch, searchValue, snackbar]);
+  }, [debouncedSearch, snackbar]);
 
   const handleSubmit = async (values: CreateActivityInput) => {
     try {

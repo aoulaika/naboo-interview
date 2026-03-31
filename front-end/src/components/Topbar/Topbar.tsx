@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks";
 import { Burger, Container, Group, Header } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
+import { useMemo } from "react";
 import { MenuItem } from "./MenuItem";
 import { useTopbarStyles } from "./Topbar.styles";
 import { getFilteredRoutes } from "./getFilteredRoutes";
@@ -15,7 +16,7 @@ export function Topbar({ routes }: TopbarProps) {
   const [opened, { toggle }] = useDisclosure(false);
   const { classes } = useTopbarStyles();
   const { user } = useAuth();
-  const filteredRoutes = getFilteredRoutes(routes, user);
+  const filteredRoutes = useMemo(() => getFilteredRoutes(routes, user), [routes, user]);
 
   return (
     <Header height={56} className={classes.header}>

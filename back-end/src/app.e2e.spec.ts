@@ -1,27 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import { BaseAppModule } from './app.module';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
+import * as cookieParser from 'cookie-parser';
 import { TestModule, closeInMongodConnection } from './test/test.module';
 
 describe('App e2e', () => {
   let app: INestApplication;
-  beforeEach(async () => {
+  beforeAll(async () => {
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_EXPIRATION_TIME = '3600';
+
     const module: TestingModule = await Test.createTestingModule({
       imports: [TestModule, BaseAppModule],
     }).compile();
 
     app = module.createNestApplication();
+    app.use(cookieParser());
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
   });
 
-  afterEach(async () => {
-    await app.close();
-  });
-
   afterAll(async () => {
-    closeInMongodConnection();
+    await app.close();
+    await closeInMongodConnection();
   });
   it('app should be defined', () => {
     expect(app).toBeDefined();
@@ -35,38 +38,45 @@ describe('App e2e', () => {
       .post('/graphql')
       .send({
         query: `
-          mutation {
-            register(signUpInput:{ email: "${email}", password: "${password}", firstName: "firstName", lastName: "lastName" }) {
+          mutation Register($input: SignUpInput!) {
+            register(signUpInput: $input) {
               email
             }
           }
         `,
+        variables: {
+          input: {
+            email,
+            password,
+            firstName: 'firstName',
+            lastName: 'lastName',
+          },
+        },
       })
       .expect(200);
 
-    expect(signUpResponse.status).toBe(200);
     expect(signUpResponse.body.data.register.email).toBe(email);
 
     const signInResponse = await request(app.getHttpServer())
       .post('/graphql')
       .send({
         query: `
-          mutation {
-            login(signInInput:{ email: "${email}", password: "${password}" }) {
+          mutation Login($input: SignInInput!) {
+            login(signInInput: $input) {
               access_token
             }
           }
         `,
+        variables: { input: { email, password } },
       })
       .expect(200);
 
-    expect(signInResponse.status).toBe(200);
     const jwt = signInResponse.body.data.login.access_token;
     expect(jwt).toEqual(expect.any(String));
 
     const getMeResponse = await request(app.getHttpServer())
       .post('/graphql')
-      .set('jwt', jwt)
+      .set('Cookie', `jwt=${jwt}`)
       .send({
         query: `
           query {
