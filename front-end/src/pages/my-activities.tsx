@@ -1,5 +1,5 @@
 import { Activity, EmptyData, PageTitle } from "@/components";
-import { graphqlClient } from "@/graphql/apollo";
+import { getGraphqlClient } from "@/graphql/apollo";
 import {
   GetUserActivitiesQuery,
   GetUserActivitiesQueryVariables,
@@ -19,14 +19,18 @@ interface MyActivitiesProps {
 export const getServerSideProps: GetServerSideProps<
   MyActivitiesProps
 > = async ({ req }) => {
-  const response = await graphqlClient.query<
-    GetUserActivitiesQuery,
-    GetUserActivitiesQueryVariables
-  >({
-    query: GetUserActivities,
-    context: { headers: { Cookie: req.headers.cookie } },
-  });
-  return { props: { activities: response.data.getActivitiesByUser } };
+  try {
+    const response = await getGraphqlClient().query<
+      GetUserActivitiesQuery,
+      GetUserActivitiesQueryVariables
+    >({
+      query: GetUserActivities,
+      context: { headers: { Cookie: req.headers.cookie } },
+    });
+    return { props: { activities: response.data.getActivitiesByUser } };
+  } catch {
+    return { props: { activities: [] } };
+  }
 };
 
 const MyActivities = ({ activities }: MyActivitiesProps) => {

@@ -2,12 +2,13 @@ import { ActivityFragment } from "@/graphql/generated/types";
 import { useGlobalStyles } from "@/utils";
 import { Box, Button, Flex, Image, Text } from "@mantine/core";
 import Link from "next/link";
+import { memo } from "react";
 
 interface ActivityListItemProps {
   activity: ActivityFragment;
 }
 
-export function ActivityListItem({ activity }: ActivityListItemProps) {
+export const ActivityListItem = memo(function ActivityListItem({ activity }: ActivityListItemProps) {
   const { classes } = useGlobalStyles();
 
   return (
@@ -37,4 +38,4 @@ export function ActivityListItem({ activity }: ActivityListItemProps) {
       </Link>
     </Flex>
   );
-}
+});

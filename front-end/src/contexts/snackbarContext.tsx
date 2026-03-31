@@ -1,6 +1,6 @@
 import { Notification } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 
 interface SnackbarContextType {
   error: (message: string) => void;
@@ -24,14 +24,14 @@ export const SnackbarProvider = ({
 }) => {
   const [snackbar, setSnackbar] = useState<Snackbar | null>(null);
 
-  const error = (message: string) => {
+  const error = useCallback((message: string) => {
     console.error(message);
     setSnackbar({ message, type: "error" });
-  };
+  }, []);
 
-  const success = (message: string) => {
+  const success = useCallback((message: string) => {
     setSnackbar({ message, type: "success" });
-  };
+  }, []);
 
   useEffect(() => {
     if (snackbar) {

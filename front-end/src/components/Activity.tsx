@@ -2,12 +2,13 @@ import { ActivityFragment } from "@/graphql/generated/types";
 import { useGlobalStyles } from "@/utils";
 import { Badge, Button, Card, Grid, Group, Image, Text } from "@mantine/core";
 import Link from "next/link";
+import { memo } from "react";
 
 interface ActivityProps {
   activity: ActivityFragment;
 }
 
-export function Activity({ activity }: ActivityProps) {
+export const Activity = memo(function Activity({ activity }: ActivityProps) {
   const { classes } = useGlobalStyles();
 
   return (
@@ -48,4 +49,4 @@ export function Activity({ activity }: ActivityProps) {
       </Card>
     </Grid.Col>
   );
-}
+});

@@ -1,5 +1,5 @@
 import { PageTitle } from "@/components";
-import { graphqlClient } from "@/graphql/apollo";
+import { getGraphqlClient } from "@/graphql/apollo";
 import {
   GetActivityQuery,
   GetActivityQueryVariables,
@@ -18,7 +18,7 @@ export const getServerSideProps: GetServerSideProps<
   ActivityDetailsProps
 > = async ({ params, req }) => {
   if (!params?.id || Array.isArray(params.id)) return { notFound: true };
-  const response = await graphqlClient.query<
+  const response = await getGraphqlClient().query<
     GetActivityQuery,
     GetActivityQueryVariables
   >({

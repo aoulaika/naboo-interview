@@ -1,6 +1,6 @@
 import { Flex, NumberInput, TextInput } from "@mantine/core";
 import { IconCurrencyEuro, IconWalk } from "@tabler/icons-react";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, memo, useCallback } from "react";
 
 interface FiltersProps {
   activity: string | undefined;
@@ -9,12 +9,23 @@ interface FiltersProps {
   setSearchPrice: Dispatch<SetStateAction<number | undefined>>;
 }
 
-export function Filters({
+export const Filters = memo(function Filters({
   activity,
   price,
   setSearchActivity,
   setSearchPrice,
 }: FiltersProps) {
+  const handleActivityChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      setSearchActivity(e.target.value || undefined),
+    [setSearchActivity]
+  );
+
+  const handlePriceChange = useCallback(
+    (e: number | "") => setSearchPrice(Number(e) || undefined),
+    [setSearchPrice]
+  );
+
   return (
     <Flex
       gap="md"
@@ -31,16 +42,16 @@ export function Filters({
       <TextInput
         icon={<IconWalk />}
         placeholder="Activité"
-        onChange={(e) => setSearchActivity(e.target.value || undefined)}
+        onChange={handleActivityChange}
         value={activity}
       />
       <NumberInput
         icon={<IconCurrencyEuro />}
-        placeholder="Prix"
+        placeholder="Prix Maximal"
         type="number"
-        onChange={(e) => setSearchPrice(Number(e) || undefined)}
+        onChange={handlePriceChange}
         value={price}
       />
     </Flex>
   );
-}
+});
