@@ -1,4 +1,4 @@
-import { ActionIcon, Center, Menu } from "@mantine/core";
+import { ActionIcon, Center, Menu, Switch } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
 import Link from "next/link";
 import { useTopbarStyles } from "./Topbar.styles";
@@ -39,11 +39,23 @@ export function MenuItem({ route, label, icon }: Route) {
       </Menu.Target>
       <Menu.Dropdown>
         {route.map((item) => (
-          <Menu.Item key={item.link}>
-            <Link href={item.link} className={classes.menuItemLink}>
-              {item.label}
-            </Link>
-          </Menu.Item>
+          <div key={item.link}>
+            {item.separator && <Menu.Divider />}
+            <Menu.Item icon={item.icon ? <item.icon size="0.9rem" stroke={1.5} /> : undefined}>
+              {item.onClick ? (
+                <Switch
+                  label={item.label}
+                  checked={item.checked}
+                  onChange={item.onClick}
+                  size="sm"
+                />
+              ) : (
+                <Link href={item.link} className={classes.menuItemLink}>
+                  {item.label}
+                </Link>
+              )}
+            </Menu.Item>
+          </div>
         ))}
       </Menu.Dropdown>
     </Menu>

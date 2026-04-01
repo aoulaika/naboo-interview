@@ -1,4 +1,6 @@
+import { useDebugMode } from "@/contexts";
 import { ActivityFragment } from "@/graphql/generated/types";
+import { useAuth } from "@/hooks";
 import { useGlobalStyles } from "@/utils";
 import { Badge, Button, Card, Grid, Group, Image, Text } from "@mantine/core";
 import Link from "next/link";
@@ -10,6 +12,10 @@ interface ActivityProps {
 
 export const Activity = memo(function Activity({ activity }: ActivityProps) {
   const { classes } = useGlobalStyles();
+  const { user } = useAuth();
+  const { isDebugMode } = useDebugMode();
+
+  const showDebugInfo = isDebugMode && user?.role === "admin";
 
   return (
     <Grid.Col span={4}>
@@ -40,6 +46,12 @@ export const Activity = memo(function Activity({ activity }: ActivityProps) {
         <Text size="sm" color="dimmed" className={classes.ellipsis}>
           {activity.description}
         </Text>
+
+        {showDebugInfo && activity.createdAt && (
+          <Text size="xs" color="gray" mt="xs" data-testid="debug-created-at">
+            {`Créé le : ${new Date(activity.createdAt).toLocaleString("fr-FR")}`}
+          </Text>
+        )}
 
         <Link href={`/activities/${activity.id}`} className={classes.link}>
           <Button variant="light" color="blue" fullWidth mt="md" radius="md">

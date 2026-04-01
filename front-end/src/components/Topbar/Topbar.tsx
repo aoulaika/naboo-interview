@@ -1,4 +1,6 @@
+import { useDebugMode } from "@/contexts";
 import { useAuth } from "@/hooks";
+import { IconBug } from "@tabler/icons-react";
 import { Burger, Container, Group, Header } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
@@ -16,7 +18,37 @@ export function Topbar({ routes }: TopbarProps) {
   const [opened, { toggle }] = useDisclosure(false);
   const { classes } = useTopbarStyles();
   const { user } = useAuth();
-  const filteredRoutes = useMemo(() => getFilteredRoutes(routes, user), [routes, user]);
+  const { isDebugMode, toggleDebugMode } = useDebugMode();
+
+  const routesWithDebugToggle = useMemo<Route[]>(() => {
+    if (user?.role !== "admin") return routes;
+
+    return routes.map((route) => {
+      if (!Array.isArray(route.route)) return route;
+
+      const profilIndex = route.route.findIndex((s) => s.link === "/profil");
+      if (profilIndex === -1) return route;
+
+      const debugItem = {
+        link: "#debug-toggle",
+        label: "Mode debug",
+        requiredAuth: true as const,
+        checked: isDebugMode,
+        onClick: toggleDebugMode,
+        icon: IconBug,
+        separator: true,
+      };
+
+      const subRoutes = [...route.route];
+      subRoutes.splice(profilIndex + 1, 0, debugItem);
+      return { ...route, route: subRoutes };
+    });
+  }, [routes, user, isDebugMode, toggleDebugMode]);
+
+  const filteredRoutes = useMemo(
+    () => getFilteredRoutes(routesWithDebugToggle, user),
+    [routesWithDebugToggle, user]
+  );
 
   return (
     <Header height={56} className={classes.header}>

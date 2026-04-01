@@ -8,6 +8,7 @@ export class User extends Document {
   @Field(() => ID)
   id!: string;
 
+  @Field()
   @Prop({ required: true, enum: ['user', 'admin'], default: 'user' })
   role!: 'user' | 'admin';
 
@@ -25,6 +26,10 @@ export class User extends Document {
 
   @Prop({ required: true })
   password!: string;
+
+  @Field()
+  @Prop({ default: false })
+  debugModeEnabled!: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
