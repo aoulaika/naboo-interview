@@ -35,17 +35,38 @@ export type CreateActivityInput = {
   price: Scalars['Int']['input'];
 };
 
+export type FavoriteList = {
+  __typename?: 'FavoriteList';
+  userId: Scalars['ID']['output'];
+  activities: Array<Activity>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
+  addFavorite: FavoriteList;
   createActivity: Activity;
   login: SignInDto;
   logout: Scalars['Boolean']['output'];
   register: User;
+  removeFavorite: FavoriteList;
+  reorderFavorites: FavoriteList;
 };
 
 
+export type MutationAddFavoriteArgs = {
+  activityId: Scalars['String']['input'];
+};
+
 export type MutationCreateActivityArgs = {
   createActivityInput: CreateActivityInput;
+};
+
+export type MutationRemoveFavoriteArgs = {
+  activityId: Scalars['String']['input'];
+};
+
+export type MutationReorderFavoritesArgs = {
+  orderedIds: Array<Scalars['String']['input']>;
 };
 
 
@@ -65,6 +86,7 @@ export type Query = {
   getActivitiesByUser: Array<Activity>;
   getActivity: Activity;
   getCities: Array<Scalars['String']['output']>;
+  getFavorites: FavoriteList;
   getLatestActivities: Array<Activity>;
   getMe: User;
 };
@@ -176,6 +198,28 @@ export type GetCitiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetCitiesQuery = { __typename?: 'Query', getCities: Array<string> };
+
+export type GetFavoritesQueryVariables = Exact<{ [key: string]: never; }>;
+
+export type GetFavoritesQuery = { __typename?: 'Query', getFavorites: { __typename?: 'FavoriteList', userId: string, activities: Array<{ __typename?: 'Activity', id: string, city: string, description: string, name: string, price: number, owner: { __typename?: 'User', firstName: string, lastName: string } }> } };
+
+export type AddFavoriteMutationVariables = Exact<{
+  activityId: Scalars['String']['input'];
+}>;
+
+export type AddFavoriteMutation = { __typename?: 'Mutation', addFavorite: { __typename?: 'FavoriteList', userId: string, activities: Array<{ __typename?: 'Activity', id: string }> } };
+
+export type RemoveFavoriteMutationVariables = Exact<{
+  activityId: Scalars['String']['input'];
+}>;
+
+export type RemoveFavoriteMutation = { __typename?: 'Mutation', removeFavorite: { __typename?: 'FavoriteList', userId: string, activities: Array<{ __typename?: 'Activity', id: string }> } };
+
+export type ReorderFavoritesMutationVariables = Exact<{
+  orderedIds: Array<Scalars['String']['input']>;
+}>;
+
+export type ReorderFavoritesMutation = { __typename?: 'Mutation', reorderFavorites: { __typename?: 'FavoriteList', userId: string, activities: Array<{ __typename?: 'Activity', id: string, city: string, description: string, name: string, price: number, owner: { __typename?: 'User', firstName: string, lastName: string } }> } };
 
 
 

@@ -1,5 +1,6 @@
 import { Activity, PageTitle } from "@/components";
 import { getGraphqlClient } from "@/graphql/apollo";
+import { useFavorites } from "@/hooks";
 import { useGlobalStyles } from "@/utils";
 import { Button, Flex, Grid, Text } from "@mantine/core";
 import { GetServerSideProps } from "next";
@@ -28,6 +29,7 @@ export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
 
 export default function Home({ activities }: HomeProps) {
   const { classes } = useGlobalStyles();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   return (
     <>
@@ -72,7 +74,12 @@ export default function Home({ activities }: HomeProps) {
             </Flex>
             <Grid>
               {activities.map((activity) => (
-                <Activity activity={activity} key={activity.id} />
+                <Activity
+                  activity={activity}
+                  key={activity.id}
+                  isFavorite={isFavorite(activity.id)}
+                  onToggleFavorite={toggleFavorite}
+                />
               ))}
             </Grid>
           </>

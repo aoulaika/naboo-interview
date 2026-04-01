@@ -1,15 +1,24 @@
 import { ActivityFragment } from "@/graphql/generated/types";
+import { useAuth } from "@/hooks";
 import { useGlobalStyles } from "@/utils";
-import { Box, Button, Flex, Image, Text } from "@mantine/core";
+import { ActionIcon, Box, Button, Flex, Image, Text } from "@mantine/core";
+import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import Link from "next/link";
 import { memo } from "react";
 
 interface ActivityListItemProps {
   activity: ActivityFragment;
+  isFavorite?: boolean;
+  onToggleFavorite?: (activityId: string) => void;
 }
 
-export const ActivityListItem = memo(function ActivityListItem({ activity }: ActivityListItemProps) {
+export const ActivityListItem = memo(function ActivityListItem({
+  activity,
+  isFavorite = false,
+  onToggleFavorite,
+}: ActivityListItemProps) {
   const { classes } = useGlobalStyles();
+  const { user } = useAuth();
 
   return (
     <Flex align="center" justify="space-between">
@@ -31,11 +40,23 @@ export const ActivityListItem = memo(function ActivityListItem({ activity }: Act
           >{`${activity.price}€/j`}</Text>
         </Box>
       </Flex>
-      <Link href={`/activities/${activity.id}`} className={classes.link}>
-        <Button variant="outline" color="dark">
-          Voir plus
-        </Button>
-      </Link>
+      <Flex gap="sm" align="center">
+        {user && onToggleFavorite && (
+          <ActionIcon
+            onClick={() => onToggleFavorite(activity.id)}
+            color="red"
+            variant="subtle"
+            aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+          >
+            {isFavorite ? <IconHeartFilled size={20} /> : <IconHeart size={20} />}
+          </ActionIcon>
+        )}
+        <Link href={`/activities/${activity.id}`} className={classes.link}>
+          <Button variant="outline" color="dark">
+            Voir plus
+          </Button>
+        </Link>
+      </Flex>
     </Flex>
   );
 });

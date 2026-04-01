@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
@@ -25,6 +25,12 @@ export class User extends Document {
 
   @Prop({ required: true })
   password!: string;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Activity' }],
+    default: [],
+  })
+  favoriteActivityIds!: mongoose.Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
