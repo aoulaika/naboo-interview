@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { SignUpInput } from 'src/auth/types';
@@ -69,6 +69,22 @@ export class UserService {
   }
 
   async reorderFavorites(userId: string, orderedIds: string[]): Promise<string[]> {
+    const currentIds = await this.getFavoriteActivityIds(userId);
+
+    const currentSet = new Set(currentIds);
+    const orderedSet = new Set(orderedIds);
+
+    const isValidPermutation =
+      orderedIds.length === currentIds.length &&
+      orderedIds.every((id) => currentSet.has(id)) &&
+      currentIds.every((id) => orderedSet.has(id));
+
+    if (!isValidPermutation) {
+      throw new BadRequestException(
+        'orderedIds must be a permutation of the current favorite ids',
+      );
+    }
+
     const user = await this.userModel.findByIdAndUpdate(
       userId,
       { favoriteActivityIds: orderedIds.map((id) => new mongoose.Types.ObjectId(id)) },
