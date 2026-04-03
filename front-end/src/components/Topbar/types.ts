@@ -4,6 +4,10 @@ export type SubRoute = {
   link: string;
   label: string;
   requiredAuth?: boolean;
+  onClick?: () => void;
+  checked?: boolean;
+  icon?: typeof IconUserCircle;
+  separator?: boolean;
 };
 
 export type Route = {

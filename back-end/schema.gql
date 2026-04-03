@@ -29,6 +29,7 @@ type Mutation {
   login(signInInput: SignInInput!): SignInDto!
   logout: Boolean!
   register(signUpInput: SignUpInput!): User!
+  setDebugMode(enabled: Boolean!): User!
 }
 
 type Query {
@@ -58,8 +59,10 @@ input SignUpInput {
 }
 
 type User {
+  debugModeEnabled: Boolean!
   email: String!
   firstName: String!
   id: ID!
   lastName: String!
+  role: String!
 }

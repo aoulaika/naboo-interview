@@ -1,4 +1,4 @@
-import { IconUserCircle } from "@tabler/icons-react";
+import { IconLogin, IconLogout, IconUser, IconUserCircle, IconUserPlus } from "@tabler/icons-react";
 import { Route } from "./components/Topbar";
 
 export const routes: Route[] = [
@@ -9,18 +9,10 @@ export const routes: Route[] = [
     label: "Utilisateur",
     icon: IconUserCircle,
     route: [
-      {
-        label: "Connection",
-        link: "/signin",
-        requiredAuth: false,
-      },
-      {
-        label: "Inscription",
-        link: "/signup",
-        requiredAuth: false,
-      },
-      { label: "Profil", link: "/profil", requiredAuth: true },
-      { label: "Déconnection", link: "/logout", requiredAuth: true },
+      { label: "Connection", link: "/signin", requiredAuth: false, icon: IconLogin, separator: true },
+      { label: "Inscription", link: "/signup", requiredAuth: false, icon: IconUserPlus, separator: true },
+      { label: "Profil", link: "/profil", requiredAuth: true, icon: IconUser, separator: true },
+      { label: "Déconnection", link: "/logout", requiredAuth: true, icon: IconLogout, separator: true },
     ],
   },
 ];
