@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserModule } from './user.module';
 import { randomUUID } from 'crypto';
@@ -172,6 +172,114 @@ describe('UserService', () => {
           enabled: true,
         }),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('favorites', () => {
+    let userId: string;
+    let activityId1: string;
+    let activityId2: string;
+
+    beforeAll(async () => {
+      const user = await userService.createUser({
+        email: `favorites-${randomUUID()}@test.com`,
+        password: 'pw',
+        firstName: 'Fav',
+        lastName: 'User',
+      });
+      userId = user.id;
+
+      // Use valid ObjectId hex strings as stand-in activity ids
+      activityId1 = '000000000000000000000001';
+      activityId2 = '000000000000000000000002';
+    });
+
+    describe('getFavoriteActivityIds', () => {
+      it('returns empty array for a user with no favorites', async () => {
+        const ids = await userService.getFavoriteActivityIds(userId);
+        expect(ids).toEqual([]);
+      });
+
+      it('throws NotFoundException for unknown userId', async () => {
+        await expect(
+          userService.getFavoriteActivityIds('000000000000000000000000'),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('addFavorite', () => {
+      it('adds an activity id to favorites', async () => {
+        const ids = await userService.addFavorite(userId, activityId1);
+        expect(ids).toContain(activityId1);
+      });
+
+      it('is idempotent — adding the same id twice does not duplicate it', async () => {
+        await userService.addFavorite(userId, activityId1);
+        const ids = await userService.addFavorite(userId, activityId1);
+        expect(ids.filter((id) => id === activityId1)).toHaveLength(1);
+      });
+
+      it('adds a second distinct activity', async () => {
+        const ids = await userService.addFavorite(userId, activityId2);
+        expect(ids).toContain(activityId1);
+        expect(ids).toContain(activityId2);
+      });
+
+      it('throws NotFoundException for unknown userId', async () => {
+        await expect(
+          userService.addFavorite('000000000000000000000000', activityId1),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('removeFavorite', () => {
+      it('removes an activity id from favorites', async () => {
+        await userService.addFavorite(userId, activityId1);
+        const ids = await userService.removeFavorite(userId, activityId1);
+        expect(ids).not.toContain(activityId1);
+      });
+
+      it('is a no-op when the activity is not in favorites', async () => {
+        const before = await userService.getFavoriteActivityIds(userId);
+        const ids = await userService.removeFavorite(userId, activityId1);
+        expect(ids).toHaveLength(before.length);
+      });
+
+      it('throws NotFoundException for unknown userId', async () => {
+        await expect(
+          userService.removeFavorite('000000000000000000000000', activityId1),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('reorderFavorites', () => {
+      it('persists the supplied ordering', async () => {
+        // Ensure both ids are in favorites
+        await userService.addFavorite(userId, activityId1);
+        await userService.addFavorite(userId, activityId2);
+
+        const ordered = [activityId2, activityId1];
+        const ids = await userService.reorderFavorites(userId, ordered);
+        expect(ids).toEqual(ordered);
+      });
+
+      it('throws BadRequestException when orderedIds is not a permutation of current favorites', async () => {
+        await userService.addFavorite(userId, activityId1);
+        await userService.addFavorite(userId, activityId2);
+
+        const unknownId = '000000000000000000000099';
+        await expect(
+          userService.reorderFavorites(userId, [activityId1, unknownId]),
+        ).rejects.toThrow(BadRequestException);
+      });
+
+      it('throws NotFoundException for unknown userId', async () => {
+        await expect(
+          userService.reorderFavorites('000000000000000000000000', [
+            activityId1,
+          ]),
+        ).rejects.toThrow(NotFoundException);
+      });
     });
   });
 });

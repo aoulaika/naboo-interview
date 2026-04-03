@@ -5,7 +5,7 @@ import {
   GetActivitiesQueryVariables,
 } from "@/graphql/generated/types";
 import GetActivities from "@/graphql/queries/activity/getActivities";
-import { useAuth } from "@/hooks";
+import { useAuth, useFavorites } from "@/hooks";
 import { Button, Grid, Group } from "@mantine/core";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -29,6 +29,7 @@ export const getServerSideProps: GetServerSideProps<
 
 export default function Discover({ activities }: DiscoverProps) {
   const { user } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   return (
     <>
@@ -46,7 +47,12 @@ export default function Discover({ activities }: DiscoverProps) {
       <Grid>
         {activities.length > 0 ? (
           activities.map((activity) => (
-            <Activity activity={activity} key={activity.id} />
+            <Activity
+              activity={activity}
+              key={activity.id}
+              isFavorite={isFavorite(activity.id)}
+              onToggleFavorite={toggleFavorite}
+            />
           ))
         ) : (
           <EmptyData />

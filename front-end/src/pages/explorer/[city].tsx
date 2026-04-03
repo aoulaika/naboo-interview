@@ -5,7 +5,7 @@ import {
   GetActivitiesByCityQueryVariables,
 } from "@/graphql/generated/types";
 import GetActivitiesByCity from "@/graphql/queries/activity/getActivitiesByCity";
-import { useDebounced } from "@/hooks";
+import { useDebounced, useFavorites } from "@/hooks";
 import { Divider, Flex, Grid } from "@mantine/core";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -51,6 +51,7 @@ export default function ActivityDetails({
 }: CityDetailsProps) {
   const router = useRouter();
   const { query } = router;
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const [searchActivity, setSearchActivity] = useState<string | undefined>(
     typeof query.activity === "string" ? query.activity : undefined
@@ -102,7 +103,11 @@ export default function ActivityDetails({
             {activities.length > 0 ? (
               activities.map((activity, idx) => (
                 <Fragment key={activity.id}>
-                  <ActivityListItem activity={activity} />
+                  <ActivityListItem
+                    activity={activity}
+                    isFavorite={isFavorite(activity.id)}
+                    onToggleFavorite={toggleFavorite}
+                  />
                   {idx < activities.length - 1 && <Divider my="sm" />}
                 </Fragment>
               ))
